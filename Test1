@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Loot Hunter - Mission Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0a0a0c;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        /* จำลองแผนที่ Dark Mode */
+        #map-bg {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            background-image: url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/100.5231,13.7367,14/1200x800?access_token=YOUR_TOKEN_HERE'); /* ลิงก์ตัวอย่าง */
+            background-size: cover;
+            filter: brightness(0.4) contrast(1.2);
+        }
+
+        /* เส้นตาราง Radar */
+        .radar-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* หน้าต่างภารกิจ (Mission Brief) */
+        .mission-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            background: rgba(10, 10, 15, 0.85);
+            border: 2px solid #00f2ff;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+            padding: 20px;
+            border-radius: 5px;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+        }
+
+        .mission-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00f2ff;
+            text-transform: uppercase;
+            border-bottom: 1px solid #00f2ff;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .label { color: #888; }
+        .value { color: #fff; font-weight: bold; }
+        .value.rare { color: #bc00ff; text-shadow: 0 0 5px #bc00ff; }
+
+        /* ระบบหมุดลอย (Floating Icons) */
+        .marker-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-pin {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border-radius: 50%;
+            border: 4px solid #00f2ff;
+            box-shadow: 0 0 25px #00f2ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            z-index: 2;
+            animation: pulse 2s infinite;
+        }
+
+        .floating-items {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            animation: rotate 10s linear infinite;
+        }
+
+        .item-icon {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            border: 2px solid white;
+        }
+
+        /* แยกสีตามประเภทที่คุยกัน */
+        .item-metal { background: #666; top: 0; left: 45px; box-shadow: 0 0 10px #666; }
+        .item-elect { background: #ffcc00; bottom: 10px; left: 10px; box-shadow: 0 0 10px #ffcc00; color: black; }
+        .item-rare { background: #bc00ff; bottom: 10px; right: 10px; box-shadow: 0 0 10px #bc00ff; }
+
+        /* ปุ่มเริ่มงาน */
+        .start-btn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            padding: 15px 50px;
+            background: #00ff41;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+            skew: -20deg;
+            transform: skew(-15deg);
+            box-shadow: -5px 5px 0 #008f11;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: #fff;
+            box-shadow: -5px 5px 0 #00f2ff;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px #00f2ff; }
+            50% { transform: scale(1.1); box-shadow: 0 0 35px #00f2ff; }
+            100% { transform: scale(1); box-shadow: 0 0 15px #00f2ff; }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map-bg"></div>
+    <div class="radar-grid"></div>
+
+    <div class="mission-panel">
+        <div class="mission-title">Mission: Multi-Loot Hub</div>
+        <div class="stat-row">
+            <span class="label">Scanner Result:</span>
+            <span class="value">3 Items Detected</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">Priority:</span>
+            <span class="value rare">HIGH (Rare Found)</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">AI Market Est:</span>
+            <span class="value">฿1,450 - ฿2,100</span>
+        </div>
+        <div class="stat-row">
+            <span class="label">Active Bidders:</span>
+            <span class="value">4 Hunters Nearby</span>
+        </div>
+        <hr style="border: 0.5px solid #333;">
+        <p style="font-size: 0.8rem; color: #aaa;">Location: Sukhumvit Soi 23, Bangkok</p>
+    </div>
+
+    <div class="marker-container">
+        <div class="floating-items">
+            <div class="item-icon item-metal" title="Metal">Fe</div>
+            <div class="item-icon item-elect" title="Electronic">⚡</div>
+            <div class="item-icon item-rare" title="Rare">★</div>
+        </div>
+        <div class="main-pin">🏠</div>
+    </div>
+
+    <button class="start-btn">ACCEPT MISSION</button>
+
+</body>
+</html>
